@@ -169,7 +169,7 @@ npm run dev
 
 Backend runs on:
 
-<!-- http://localhost:5000 -->
+
 🔹 Frontend Setup
 cd client
 npm install
@@ -177,7 +177,7 @@ npm run dev
 
 Frontend runs on:
 
-http://localhost:5173
+
 🔒 Environment Variables
 
 Inside server/.env
