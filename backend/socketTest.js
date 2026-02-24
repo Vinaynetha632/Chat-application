@@ -1,17 +1,18 @@
+// src/socket.js  (or wherever your socket file is)
+
 import { io } from "socket.io-client";
 
-const USER_ID = "699b18b4e501b31c40ff636d"; // change this
-
-const socket = io("http://localhost:5000");
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
+  withCredentials: true,
+  transports: ["websocket"], // improves stability in production
+});
 
 socket.on("connect", () => {
-  console.log("Connected as:", socket.id);
-
-  // Join with userId
-  socket.emit("join", USER_ID);
+  console.log("Socket connected:", socket.id);
 });
 
-socket.on("newMessage", (msg) => {
-  console.log("🔥 New message received:");
-  console.log(msg);
+socket.on("disconnect", () => {
+  console.log("Socket disconnected");
 });
+
+export default socket;

@@ -25,7 +25,7 @@ function Chat() {
 
   // ================= SOCKET =================
   useEffect(() => {
-    socket = io("http://localhost:5000", {
+import.meta.env.VITE_BACKEND_URL{
       withCredentials: true,
     });
 

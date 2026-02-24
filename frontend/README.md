@@ -169,7 +169,7 @@ npm run dev
 
 Backend runs on:
 
-http://localhost:5000
+<!-- http://localhost:5000 -->
 🔹 Frontend Setup
 cd client
 npm install
