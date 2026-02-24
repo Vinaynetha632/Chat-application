@@ -110,45 +110,45 @@ Responsive layout
 ProMessage/
 │
 ├── client/
-│   ├── pages/
-│   │   ├── Login.jsx
-│   │   ├── Register.jsx
-│   │   ├── Chat.jsx
-│   │
-│   ├── components/
-│   │   ├── ProtectedRoute.jsx
-│   │   ├── AuthNavbar.jsx
-│   │
-│   ├── context/
-│   │   ├── AuthContext.jsx
-│   │
-│   ├── services/
-│   │   ├── api.js
-│   │
-│   ├── App.jsx
-│   └── index.css
+│ ├── pages/
+│ │ ├── Login.jsx
+│ │ ├── Register.jsx
+│ │ ├── Chat.jsx
+│ │
+│ ├── components/
+│ │ ├── ProtectedRoute.jsx
+│ │ ├── AuthNavbar.jsx
+│ │
+│ ├── context/
+│ │ ├── AuthContext.jsx
+│ │
+│ ├── services/
+│ │ ├── api.js
+│ │
+│ ├── App.jsx
+│ └── index.css
 │
 ├── server/
-│   ├── config/
-│   │   ├── db.js
-│   │
-│   ├── models/
-│   │   ├── User.js
-│   │   ├── Message.js
-│   │   ├── Conversation.js
-│   │
-│   ├── routes/
-│   │   ├── authRoutes.js
-│   │   ├── messageRoutes.js
-│   │   ├── conversationRoutes.js
-│   │
-│   ├── controllers/
-│   ├── middleware/
-│   ├── socket/
-│   │   ├── socket.js
-│   │
-│   ├── server.js
-│   └── .env
+│ ├── config/
+│ │ ├── db.js
+│ │
+│ ├── models/
+│ │ ├── User.js
+│ │ ├── Message.js
+│ │ ├── Conversation.js
+│ │
+│ ├── routes/
+│ │ ├── authRoutes.js
+│ │ ├── messageRoutes.js
+│ │ ├── conversationRoutes.js
+│ │
+│ ├── controllers/
+│ ├── middleware/
+│ ├── socket/
+│ │ ├── socket.js
+│ │
+│ ├── server.js
+│ └── .env
 ⚙️ Installation & Setup
 1️⃣ Clone the Repository
 git clone https://github.com/Vinaynetha632/Chat-application.git
@@ -234,7 +234,6 @@ Deployment (Render / Railway / Vercel)
 Mobile responsive optimization
 
 Dark/Light mode toggle
-
 
 👨‍💻 Author
 
