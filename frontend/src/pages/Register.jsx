@@ -59,7 +59,6 @@ function Register() {
       setTimeout(() => {
         navigate("/");
       }, 1500);
-
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed.");
     }
