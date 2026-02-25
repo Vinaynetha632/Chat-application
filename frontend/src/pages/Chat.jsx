@@ -6,6 +6,8 @@ import { FiMessageSquare } from "react-icons/fi";
 import { IoSend } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
+let socket;
+
 function Chat() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -20,8 +22,8 @@ function Chat() {
   const [onlineUserIds, setOnlineUserIds] = useState([]);
 
   const messagesEndRef = useRef(null);
-  const socketRef = useRef(null); // ✅ persistent socket
 
+  // Prevent blank screen if user not loaded yet
   if (!user) {
     return (
       <div className="h-screen flex items-center justify-center bg-[#0E0B1F] text-white">
@@ -32,14 +34,10 @@ function Chat() {
 
   // ================= SOCKET =================
   useEffect(() => {
-    if (socketRef.current) return; // prevent multiple connections
-
-    socketRef.current = io(import.meta.env.VITE_BACKEND_URL, {
+    socket = io(import.meta.env.VITE_BACKEND_URL, {
       withCredentials: true,
       transports: ["websocket"],
     });
-
-    const socket = socketRef.current;
 
     socket.emit("join", user._id);
 
@@ -48,17 +46,13 @@ function Chat() {
     });
 
     socket.on("newMessage", (message) => {
-      if (
-        conversation &&
-        message.conversationId === conversation._id
-      ) {
-        setMessages((prev) => [...prev, message]);
-      } else {
+      if (!conversation || message.conversationId !== conversation._id) {
         setUnreadCounts((prev) => ({
           ...prev,
-          [message.senderId]:
-            (prev[message.senderId] || 0) + 1,
+          [message.senderId]: (prev[message.senderId] || 0) + 1,
         }));
+      } else {
+        setMessages((prev) => [...prev, message]);
       }
     });
 
@@ -66,18 +60,14 @@ function Chat() {
       if (conversation && conversation._id === conversationId) {
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.senderId === user._id
-              ? { ...msg, seen: true }
-              : msg
-          )
+            msg.senderId === user._id ? { ...msg, seen: true } : msg,
+          ),
         );
       }
     });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, [user]);
+    return () => socket.disconnect();
+  }, [user, conversation]);
 
   // ================= FETCH USERS =================
   useEffect(() => {
@@ -97,7 +87,7 @@ function Chat() {
   });
 
   const filteredUsers = sortedUsers.filter((u) =>
-    u.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+    u.fullName.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // ================= OPEN CHAT =================
@@ -110,9 +100,7 @@ function Chat() {
 
     setConversation(convRes.data);
 
-    const msgRes = await api.get(
-      `/messages/${convRes.data._id}`
-    );
+    const msgRes = await api.get(`/messages/${convRes.data._id}`);
     setMessages(msgRes.data);
 
     await api.put("/messages/seen", {
@@ -154,8 +142,7 @@ function Chat() {
   }, [messages]);
 
   return (
-    <div className="h-screen w-full flex overflow-x-hidden bg-[#0E0B1F] text-white">
-
+    <div className="h-screen w-full flex overflow-hidden bg-[#0E0B1F] text-white">
       {/* LEFT SIDEBAR */}
       <div className="w-[70px] bg-[#15122B] flex flex-col items-center py-6 gap-6 border-r border-[#1F1B3A]">
         <div
@@ -168,7 +155,6 @@ function Chat() {
 
       {/* USERS SIDEBAR */}
       <div className="w-[320px] bg-[#14112A] border-r border-[#1F1B3A] flex flex-col">
-
         <div className="p-6 text-xl font-semibold">Users</div>
 
         <div className="px-4 pb-3">
@@ -181,7 +167,7 @@ function Chat() {
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 space-y-2">
+        <div className="flex-1 overflow-y-auto px-3 space-y-2">
           {filteredUsers.map((u) => {
             const isOnline = onlineUserIds.includes(u._id);
 
@@ -190,9 +176,11 @@ function Chat() {
                 key={u._id}
                 onClick={() => openChat(u)}
                 className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition
-                  ${selectedUser?._id === u._id
-                    ? "bg-[#1E1A38]"
-                    : "hover:bg-[#1E1A38]"}`}
+                  ${
+                    selectedUser?._id === u._id
+                      ? "bg-[#1E1A38]"
+                      : "hover:bg-[#1E1A38]"
+                  }`}
               >
                 <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
                   {u.fullName[0]}
@@ -221,20 +209,41 @@ function Chat() {
         {selectedUser ? (
           <>
             <div className="flex items-center px-8 py-5 border-b border-[#1F1B3A]">
-              <p className="font-semibold">{selectedUser.fullName}</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
+                  {selectedUser.fullName[0]}
+                </div>
+                <div>
+                  <p className="font-semibold">{selectedUser.fullName}</p>
+                  <p className="text-green-400 text-sm">
+                    {onlineUserIds.includes(selectedUser._id)
+                      ? "Active now"
+                      : "Offline"}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="flex-1 px-16 py-6 overflow-y-auto overflow-x-hidden flex flex-col gap-4">
+            <div className="flex-1 px-16 py-6 overflow-y-auto flex flex-col gap-4">
               {messages.map((msg) => (
                 <div
                   key={msg._id}
                   className={`px-4 py-2 rounded-2xl text-sm whitespace-pre-wrap
-                    ${msg.senderId === user._id
-                      ? "self-end bg-gradient-to-r from-indigo-600 to-purple-600"
-                      : "self-start bg-[#2A244F]"}`}
-                  style={{ maxWidth: "60%", wordBreak: "break-word" }}
+                    ${
+                      msg.senderId === user._id
+                        ? "self-end bg-gradient-to-r from-indigo-600 to-purple-600"
+                        : "self-start bg-[#2A244F]"
+                    }`}
+                  style={{ maxWidth: "60%" }}
                 >
-                  {msg.text}
+                  <div className="flex items-end gap-2">
+                    <span>{msg.text}</span>
+                    {msg.senderId === user._id && (
+                      <span className="text-xs opacity-80">
+                        {msg.seen ? "✓✓" : "✓"}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
               <div ref={messagesEndRef}></div>
